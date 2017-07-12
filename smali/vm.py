@@ -34,6 +34,8 @@ class VM(object):
         self.catch_blocks = []
         # packed switches containers
         self.packed_switches = {}
+
+        self.sparse_switches = {}
         # array data blocks
         self.array_data = {}
         # list of thrown exceptions
@@ -71,6 +73,7 @@ class VM(object):
 
         # nope, report unhandled exception
         self.emu.fatal("Unhandled exception '%s'." % str(e) )
+
 
     def new_instance(self, klass):
         return self.mapping.new_instance(self, klass)

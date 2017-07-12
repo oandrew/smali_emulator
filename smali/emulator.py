@@ -53,6 +53,7 @@ class Emulator(object):
         self.preprocessors = [
             TryCatchPreprocessor,
             PackedSwitchPreprocessor,
+            SparseSwitchPreprocessor,
             ArrayDataPreprocessor
         ]
         # Opcodes handlers.
@@ -86,7 +87,7 @@ class Emulator(object):
                 # loop each preprocessors and search for the one responsible to parse this line
                 processed = False
                 for preproc in self.preprocessors:
-                    if preproc.check(line):
+                    if preproc.check(line, self.source.lines[index+1]):
                         next_line = preproc.process( self.vm, line, index, self.source.lines )
                         processed = True
 
@@ -125,9 +126,9 @@ class Emulator(object):
         print "\n%s" % message
         sys.exit()
 
-    def run_file(self, filename, args = {}, trace=False):
+    def run_file(self, filename, args = {}, trace=False, vm=None):
         fd = open(filename, 'r')
-        return self.run(fd, args, trace)
+        return self.run(fd, args, trace, vm)
 
 
     def run(self, fd, args = {}, trace=False, vm=None):

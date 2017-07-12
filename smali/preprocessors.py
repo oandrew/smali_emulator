@@ -22,7 +22,7 @@ from smali.opcodes import OpCode
 # Preprocess try/catch blocks.
 class TryCatchPreprocessor:
     @staticmethod
-    def check(line):
+    def check(line, line2):
         return line.startswith( ':try_start_' )
 
     @staticmethod
@@ -49,8 +49,8 @@ class TryCatchPreprocessor:
 # Preprocess packed-switch blocks.
 class PackedSwitchPreprocessor:
     @staticmethod
-    def check(line):
-        return line.startswith( ':pswitch_data' )
+    def check(line, line2):
+        return line.startswith( ':pswitch_data' ) or line2.startswith('.packed-switch')
 
     @staticmethod
     def process(vm, name, index, lines):
@@ -76,10 +76,43 @@ class PackedSwitchPreprocessor:
         # keep preprocessing from the end of this block
         return next_line
 
+class SparseSwitchPreprocessor:
+    @staticmethod
+    def check(line, line2):
+        print line, line2
+        return (line.startswith( ':sswitch_data' ) or line2.startswith('.sparse-switch'))
+
+    @staticmethod
+    def process(vm, name, index, lines):
+        sswitch   = {"cases": {}}
+        next_line = index
+
+        for nindex, nline in enumerate(lines[index + 1:]):
+            print nline
+            if nline.startswith(".sparse-switch"):
+                pass
+
+            elif nline.find('->') != -1 :
+                pair = nline.split(' -> ')
+                sswitch["cases"][OpCode.get_int_value(pair[0])] = pair[1]
+
+            elif nline == '.end sparse-switch':
+                next_line = index + nindex + 1
+                break
+
+            else:
+                vm.fatal("Unexpected line '%s' while preprocessing sparse-switch." % nline)
+
+        vm.sparse_switches[name] = sswitch
+        print vm.sparse_switches
+
+        # keep preprocessing from the end of this block
+        return next_line
+
 # Preprocess array-data blocks.
 class ArrayDataPreprocessor:
     @staticmethod
-    def check(line):
+    def check(line, line2):
         return line.startswith( ':array_' )
 
     @staticmethod

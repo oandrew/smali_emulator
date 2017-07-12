@@ -17,6 +17,8 @@
 # or write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 import re
+import traceback
+import sys
 
 # Base class for all Dalvik opcodes ( see http://pallergabor.uw.hu/androidblog/dalvik_opcodes.html ).
 class OpCode(object):
@@ -43,6 +45,8 @@ class OpCode(object):
         try:
             self.eval(vm, *[x.strip() if x is not None else x for x in m.groups()])
         except Exception as e:
+            exc_info = sys.exc_info()
+            traceback.print_exception(*exc_info)
             vm.exception(e)
 
         return True
@@ -435,3 +439,28 @@ class op_PackedSwitch(OpCode):
         case_label = cases[case_idx]
 
         vm.goto(case_label)
+
+class op_SparseSwitch(OpCode):
+    def __init__(self):
+        OpCode.__init__(self, '^sparse-switch (.+),\s*(.+)')
+
+    @staticmethod
+    def eval(vm, vx, table):
+        val = vm[vx]
+        switch = vm.sparse_switches.get(table, {})
+        cases = switch.get('cases', {})
+        int_val = None
+        if isinstance(val, str) and len(val) == 1:
+            int_val = ord(val)
+        elif isinstance(val, int):
+            int_val = int(val)
+        else:
+            vm.emu.fatal( "Unsupported return type." )
+
+        case_label = cases.get(int_val, None)
+
+        if case_label is None:
+            return
+
+        vm.goto(case_label)
+        

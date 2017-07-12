@@ -31,7 +31,8 @@ class String:
             'charAt(I)C': String.charat,
             'toCharArray()[C': String.tochararray,
             'intern()Ljava/lang/String;': String.repr_intern,
-            'valueOf([CII)Ljava/lang/String;': String.valueof
+            'valueOf([CII)Ljava/lang/String;': String.valueof,
+            'length()I': String.length
         }
 
     @staticmethod
@@ -59,5 +60,10 @@ class String:
     @staticmethod
     def valueof(vm, this, args):
         lstring = "".join(vm[this])
-        vm.return_v =lstring[int(vm[args[0]]):int(vm[args[1]])]
+        vm.return_v =lstring
+
+    @staticmethod
+    def length(vm, this, args):
+        obj = vm[this]
+        vm.return_v = len(obj)
 

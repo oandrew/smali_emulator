@@ -86,8 +86,13 @@ class Emulator(object):
             elif line[0] == ':':
                 # loop each preprocessors and search for the one responsible to parse this line
                 processed = False
+                try:
+                    line2 = self.source.lines[index+1]
+                except IndexError:
+                    line2 = ''
+                    
                 for preproc in self.preprocessors:
-                    if preproc.check(line, self.source.lines[index+1]):
+                    if preproc.check(line, line2):
                         next_line = preproc.process( self.vm, line, index, self.source.lines )
                         processed = True
 

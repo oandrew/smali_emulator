@@ -429,9 +429,17 @@ class op_PackedSwitch(OpCode):
     @staticmethod
     def eval(vm, vx, table):
         val = vm[vx]
+        int_val = None
+        if isinstance(val, str) and len(val) == 1:
+            int_val = ord(val)
+        elif isinstance(val, int):
+            int_val = int(val)
+        else:
+            vm.emu.fatal( "Unsupported return type." )
+
         switch = vm.packed_switches.get(table, {})
         cases = switch.get('cases', [])
-        case_idx = val - switch.get('first_value')
+        case_idx = int_val - switch.get('first_value')
 
         if case_idx >= len(cases) or case_idx < 0:
             return
@@ -463,4 +471,3 @@ class op_SparseSwitch(OpCode):
             return
 
         vm.goto(case_label)
-        

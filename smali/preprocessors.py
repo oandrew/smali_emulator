@@ -50,7 +50,7 @@ class TryCatchPreprocessor:
 class PackedSwitchPreprocessor:
     @staticmethod
     def check(line, line2):
-        return line.startswith( ':pswitch_data' ) or line2.startswith('.packed-switch')
+        return ( line.startswith( ':pswitch_data' ) or line2.startswith('.packed-switch ') )
 
     @staticmethod
     def process(vm, name, index, lines):
@@ -61,7 +61,7 @@ class PackedSwitchPreprocessor:
             if nline.startswith(".packed-switch "):
                 pswitch["first_value"] = OpCode.get_int_value(nline.split(' ')[1])
 
-            elif nline.startswith(':pswitch_'):
+            elif nline.startswith(':'):
                 pswitch["cases"].append(nline)
 
             elif nline == '.end packed-switch':
@@ -72,14 +72,12 @@ class PackedSwitchPreprocessor:
                 vm.fatal("Unexpected line '%s' while preprocessing packed-switch." % nline)
 
         vm.packed_switches[name] = pswitch
-
         # keep preprocessing from the end of this block
         return next_line
 
 class SparseSwitchPreprocessor:
     @staticmethod
     def check(line, line2):
-        print line, line2
         return (line.startswith( ':sswitch_data' ) or line2.startswith('.sparse-switch'))
 
     @staticmethod
